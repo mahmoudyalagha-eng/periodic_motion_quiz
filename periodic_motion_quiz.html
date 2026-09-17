@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Periodic Motion Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,440;0,9..144,600;1,9..144,500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F3EC;
+    --panel: #FFFFFF;
+    --panel-border: #E5E0D2;
+    --text: #201E27;
+    --text-secondary: #6E6A5C;
+    --accent: #C97A1A;
+    --accent-soft: #F1DEC0;
+    --correct: #2E8B57;
+    --correct-soft: #DCEEE1;
+    --incorrect: #C1443B;
+    --incorrect-soft: #F5DEDA;
+    --bar-empty: #E5E0D2;
+    --focus-ring: #6E6A5C;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12141C;
+      --panel: #1C2030;
+      --panel-border: #2C3044;
+      --text: #ECEDF2;
+      --text-secondary: #9AA0B4;
+      --accent: #F0AC3F;
+      --accent-soft: #3A2E17;
+      --correct: #6FCF97;
+      --correct-soft: #1E3327;
+      --incorrect: #FF8177;
+      --incorrect-soft: #3A2020;
+      --bar-empty: #2C3044;
+      --focus-ring: #F0AC3F;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #12141C;
+    --panel: #1C2030;
+    --panel-border: #2C3044;
+    --text: #ECEDF2;
+    --text-secondary: #9AA0B4;
+    --accent: #F0AC3F;
+    --accent-soft: #3A2E17;
+    --correct: #6FCF97;
+    --correct-soft: #1E3327;
+    --incorrect: #FF8177;
+    --incorrect-soft: #3A2020;
+    --bar-empty: #2C3044;
+    --focus-ring: #F0AC3F;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100%;
+  }
+
+  body {
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 64px;
+    line-height: 1.5;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  header.hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+
+  .pendulum-wrap {
+    flex: none;
+    width: 64px;
+    height: 64px;
+  }
+
+  .pendulum-arm {
+    transform-origin: 32px 8px;
+    animation: swing 1.7s ease-in-out infinite alternate;
+  }
+
+  @keyframes swing {
+    from { transform: rotate(-20deg); }
+    to   { transform: rotate(20deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pendulum-arm { animation: none; transform: rotate(0deg); }
+  }
+
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-style: italic;
+    font-size: 1.7rem;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    max-width: 34ch;
+  }
+
+  .bars {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+    margin-bottom: 26px;
+  }
+
+  .bar {
+    height: 26px;
+    border-radius: 4px;
+    background: var(--bar-empty);
+    border: none;
+    padding: 0;
+    cursor: default;
+    transition: background 0.25s ease, transform 0.15s ease;
+  }
+
+  .bar.visited { cursor: pointer; }
+  .bar.visited:hover { transform: scaleY(1.12); }
+  .bar.current { background: var(--accent); }
+  .bar.correct { background: var(--correct); }
+  .bar.incorrect { background: var(--incorrect); }
+  .bar:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 28px 26px 24px;
+  }
+
+  .q-count {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin: 0 0 10px;
+  }
+
+  .prompt {
+    font-size: 1.12rem;
+    font-weight: 500;
+    margin: 0 0 18px;
+    line-height: 1.45;
+  }
+
+  .hint-toggle {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0 0 16px;
+    cursor: pointer;
+    display: block;
+  }
+
+  .hint-toggle:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+
+  .hint-text {
+    display: none;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    background: var(--accent-soft);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: -8px 0 16px;
+  }
+
+  .hint-text.shown { display: block; }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .option {
+    text-align: left;
+    font-family: inherit;
+    font-size: 0.98rem;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--panel-border);
+    border-left: 4px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .option:hover:not(:disabled) {
+    border-left-color: var(--accent);
+  }
+
+  .option:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .option:disabled { cursor: default; }
+
+  .option.chosen-correct {
+    border-left-color: var(--correct);
+    background: var(--correct-soft);
+  }
+
+  .option.chosen-incorrect {
+    border-left-color: var(--incorrect);
+    background: var(--incorrect-soft);
+  }
+
+  .option.reveal-correct {
+    border-left-color: var(--correct);
+  }
+
+  .feedback {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    display: none;
+  }
+
+  .feedback.shown { display: block; }
+  .feedback.is-correct { background: var(--correct-soft); }
+  .feedback.is-incorrect { background: var(--incorrect-soft); }
+
+  .feedback strong { display: block; margin-bottom: 4px; }
+  .feedback.is-correct strong { color: var(--correct); }
+  .feedback.is-incorrect strong { color: var(--incorrect); }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 22px;
+  }
+
+  .btn {
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid var(--panel-border);
+    background: transparent;
+    color: var(--text);
+  }
+
+  .btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #1A1204;
+  }
+
+  :root[data-theme="dark"] .btn.primary,
+  @media (prefers-color-scheme: dark) { }
+
+  .btn.primary { color: #241804; }
+
+  .results {
+    text-align: center;
+  }
+
+  .score-big {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 3.2rem;
+    font-weight: 600;
+    margin: 6px 0 4px;
+  }
+
+  .score-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0 0 20px;
+  }
+
+  .score-msg {
+    font-size: 1rem;
+    margin: 0 0 24px;
+  }
+
+  .retake {
+    margin: 0 auto;
+    display: inline-block;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    margin-top: 28px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <div class="pendulum-wrap" aria-hidden="true">
+      <svg viewBox="0 0 64 64" width="64" height="64">
+        <line x1="14" y1="8" x2="50" y2="8" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"/>
+        <g class="pendulum-arm">
+          <line x1="32" y1="8" x2="32" y2="42" stroke="var(--accent)" stroke-width="2"/>
+          <circle cx="32" cy="49" r="9" fill="var(--accent)"/>
+        </g>
+      </svg>
+    </div>
+    <div>
+      <h1>Periodic Motion</h1>
+      <p class="subtitle">10 questions on oscillations, Hooke's Law, pendulums &amp; resonance.</p>
+    </div>
+  </header>
+
+  <div class="bars" id="bars" role="tablist" aria-label="Question progress"></div>
+
+  <main class="card" id="card"></main>
+
+  <footer>Based on Module 13, Lesson 1 — Periodic Motion</footer>
+</div>
+
+<script>
+(function () {
+  var QUESTIONS = [
+    {
+      id: "q1",
+      prompt: "What is the amplitude of a periodic motion?",
+      options: [
+        { id: "a", text: "The maximum distance the object moves from its equilibrium position" },
+        { id: "b", text: "The time required for one complete cycle" },
+        { id: "c", text: "The net force acting on the object at equilibrium" },
+        { id: "d", text: "The total energy of the oscillating system" }
+      ],
+      correct: "a",
+      explanation: "Amplitude is the maximum distance the object moves from equilibrium. The time for one full cycle is the period, not the amplitude.",
+      correctFeedback: "Exactly right.",
+      incorrectFeedback: "Not quite — that's a different quantity."
+    },
+    {
+      id: "q2",
+      prompt: "Which condition must be true for a system to exhibit simple harmonic motion?",
+      options: [
+        { id: "a", text: "The restoring force is directly proportional to the displacement from equilibrium" },
+        { id: "b", text: "The force stays constant no matter the displacement" },
+        { id: "c", text: "The object moves at constant velocity throughout" },
+        { id: "d", text: "The force is proportional to the square of the displacement" }
+      ],
+      correct: "a",
+      explanation: "SHM occurs whenever the restoring force acting to return an object to equilibrium is directly proportional to its displacement — the defining feature seen in both springs and (small-angle) pendulums.",
+      correctFeedback: "That's the key definition.",
+      incorrectFeedback: "Close, but that's not the defining condition of SHM."
+    },
+    {
+      id: "q3",
+      prompt: "In Hooke's Law, F = -kx, what does the negative sign tell you?",
+      options: [
+        { id: "a", text: "The spring's restoring force always points opposite to the displacement" },
+        { id: "b", text: "The spring constant k is itself a negative number" },
+        { id: "c", text: "The force decreases as the spring stretches further" },
+        { id: "d", text: "The spring is continuously losing energy" }
+      ],
+      correct: "a",
+      explanation: "The negative sign shows the spring's force is a restoring force — it always acts opposite the stretch or compression, pulling the mass back toward equilibrium.",
+      correctFeedback: "Correct — that's the restoring nature of the force.",
+      incorrectFeedback: "Not quite — think about which direction the spring pulls."
+    },
+    {
+      id: "q4",
+      prompt: "A spring stretches 12 cm when a 24 N weight is hung from it. What is the spring constant?",
+      hint: "Convert 12 cm to meters before dividing.",
+      options: [
+        { id: "a", text: "200 N/m" },
+        { id: "b", text: "2 N/m" },
+        { id: "c", text: "2.88 N/m" },
+        { id: "d", text: "12 N/m" }
+      ],
+      correct: "a",
+      explanation: "k = F/x = 24 N ÷ 0.12 m = 200 N/m. Forgetting to convert 12 cm to 0.12 m gives the wrong value of 2 N/m.",
+      correctFeedback: "Nicely calculated!",
+      incorrectFeedback: "Check your unit conversion — did you use meters?"
+    },
+    {
+      id: "q5",
+      prompt: "A spring has a spring constant of 56 N/m. How far will it stretch when an 18 N weight is hung from it?",
+      options: [
+        { id: "a", text: "≈ 0.32 m" },
+        { id: "b", text: "≈ 3.1 m" },
+        { id: "c", text: "≈ 1008 m" },
+        { id: "d", text: "≈ 0.032 m" }
+      ],
+      correct: "a",
+      explanation: "Rearranging F = kx gives x = F/k = 18 N ÷ 56 N/m ≈ 0.32 m (32 cm).",
+      correctFeedback: "That's the right stretch distance.",
+      incorrectFeedback: "Check which value you divided by which."
+    },
+    {
+      id: "q6",
+      prompt: "A pendulum's bob is swapped for one with double the mass, while the length and location (and therefore g) stay the same. What happens to its period?",
+      options: [
+        { id: "a", text: "The period stays exactly the same" },
+        { id: "b", text: "The period doubles" },
+        { id: "c", text: "The period is cut in half" },
+        { id: "d", text: "The period increases by a factor of √2" }
+      ],
+      correct: "a",
+      explanation: "T = 2π√(ℓ/g) contains no mass term at all — a pendulum's period depends only on its length and the gravitational field, not the mass of the bob.",
+      correctFeedback: "Right — mass doesn't factor into it.",
+      incorrectFeedback: "Look closely at the period formula — is mass even in it?"
+    },
+    {
+      id: "q7",
+      prompt: "What is the period of a 1.0 m long pendulum on Earth (g = 9.8 N/kg)?",
+      hint: "T = 2π√(ℓ/g)",
+      options: [
+        { id: "a", text: "≈ 2.0 s" },
+        { id: "b", text: "≈ 6.3 s" },
+        { id: "c", text: "≈ 0.32 s" },
+        { id: "d", text: "≈ 4.0 s" }
+      ],
+      correct: "a",
+      explanation: "T = 2π√(1.0/9.8) = 2π(0.319) ≈ 2.0 s. Getting 6.3 s usually means g was left out of the square root, while 0.32 s means the 2π factor was forgotten.",
+      correctFeedback: "That's the correct period.",
+      incorrectFeedback: "Double-check that both the square root and the 2π factor are included."
+    },
+    {
+      id: "q8",
+      prompt: "A spring with k = 144 N/m is compressed by 16.5 cm. How much elastic potential energy is stored?",
+      hint: "PE = ½kx², and remember to convert cm to m first.",
+      options: [
+        { id: "a", text: "≈ 1.96 J" },
+        { id: "b", text: "≈ 3.92 J" },
+        { id: "c", text: "≈ 11.88 J" },
+        { id: "d", text: "≈ 23.8 J" }
+      ],
+      correct: "a",
+      explanation: "PE = ½kx² = ½(144 N/m)(0.165 m)² ≈ ½(144)(0.0272) ≈ 1.96 J. Forgetting the ½ factor gives 3.92 J; forgetting to square x gives 11.88 J.",
+      correctFeedback: "Exactly right.",
+      incorrectFeedback: "Check whether you squared x and included the ½ factor."
+    },
+    {
+      id: "q9",
+      prompt: "A pendulum with a length of 0.75 m has a period of 1.8 s on an unknown planet. What is the gravitational field g at that location?",
+      hint: "Rearrange T = 2π√(ℓ/g) to solve for g.",
+      options: [
+        { id: "a", text: "≈ 9.14 N/kg" },
+        { id: "b", text: "≈ 9.8 N/kg" },
+        { id: "c", text: "≈ 16.4 N/kg" },
+        { id: "d", text: "≈ 4.57 N/kg" }
+      ],
+      correct: "a",
+      explanation: "Solving T = 2π√(ℓ/g) for g gives g = 4π²ℓ/T² = 4π²(0.75)/(1.8)² ≈ 29.6/3.24 ≈ 9.14 N/kg. Using 9.8 N/kg just assumes Earth's gravity; forgetting to square T gives ≈16.4 N/kg.",
+      correctFeedback: "Great, that's the calculated field strength.",
+      incorrectFeedback: "Make sure T is squared in the denominator."
+    },
+    {
+      id: "q10",
+      prompt: "A car's wheel is out of balance and shakes strongly at one particular driving speed, but not at higher or lower speeds. What best explains this?",
+      options: [
+        { id: "a", text: "Resonance: at that speed the wheel's rotation frequency matches the car's natural vibration frequency, amplifying the oscillation" },
+        { id: "b", text: "The tire only loses air pressure at that specific speed" },
+        { id: "c", text: "Engine vibration happens to be strongest at that one speed" },
+        { id: "d", text: "Air resistance peaks specifically at that speed" }
+      ],
+      correct: "a",
+      explanation: "This is resonance: when a periodic force (the imbalanced wheel) is applied at a frequency matching the system's natural frequency, the amplitude of vibration increases sharply — hence shaking strong at only one speed.",
+      correctFeedback: "That's resonance in action.",
+      incorrectFeedback: "Think about what happens when a driving frequency matches a natural frequency."
+    }
+  ];
+
+  function shuffleArray(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  var state = {
+    idx: 0,
+    answers: new Array(QUESTIONS.length).fill(null),
+    visited: new Array(QUESTIONS.length).fill(false),
+    optionOrder: new Array(QUESTIONS.length).fill(null),
+    finished: false
+  };
+
+  var barsEl = document.getElementById('bars');
+  var cardEl = document.getElementById('card');
+
+  function score() {
+    var s = 0;
+    for (var i = 0; i < QUESTIONS.length; i++) {
+      if (state.answers[i] === QUESTIONS[i].correct) s++;
+    }
+    return s;
+  }
+
+  function renderBars() {
+    barsEl.innerHTML = '';
+    QUESTIONS.forEach(function (q, i) {
+      var b = document.createElement('button');
+      b.className = 'bar';
+      b.setAttribute('aria-label', 'Question ' + (i + 1));
+      var answer = state.answers[i];
+      if (answer !== null) {
+        b.classList.add(answer === q.correct ? 'correct' : 'incorrect');
+      } else if (i === state.idx && !state.finished) {
+        b.classList.add('current');
+      }
+      if (state.visited[i]) {
+        b.classList.add('visited');
+        b.addEventListener('click', function () {
+          state.finished = false;
+          state.idx = i;
+          render();
+        });
+      } else {
+        b.disabled = true;
+      }
+      barsEl.appendChild(b);
+    });
+  }
+
+  function renderQuestion() {
+    var i = state.idx;
+    var q = QUESTIONS[i];
+    state.visited[i] = true;
+    var answered = state.answers[i];
+
+    if (!state.optionOrder[i]) {
+      state.optionOrder[i] = shuffleArray(q.options);
+    }
+    var displayOptions = state.optionOrder[i];
+
+    var html = '';
+    html += '<p class="q-count">Question ' + (i + 1) + ' of ' + QUESTIONS.length + '</p>';
+    html += '<p class="prompt">' + q.prompt + '</p>';
+
+    if (q.hint) {
+      html += '<button class="hint-toggle" id="hintBtn" type="button">Need a hint?</button>';
+      html += '<div class="hint-text" id="hintText">' + q.hint + '</div>';
+    }
+
+    html += '<div class="options" id="optionsWrap">';
+    displayOptions.forEach(function (opt) {
+      var cls = 'option';
+      if (answered) {
+        if (opt.id === q.correct) cls += ' reveal-correct';
+        if (opt.id === answered && answered !== q.correct) cls += ' chosen-incorrect';
+        if (opt.id === answered && answered === q.correct) cls += ' chosen-correct';
+      }
+      html += '<button class="' + cls + '" data-opt="' + opt.id + '" ' + (answered ? 'disabled' : '') + '>' + opt.text + '</button>';
+    });
+    html += '</div>';
+
+    var fbClass = 'feedback';
+    var fbContent = '';
+    if (answered) {
+      var isCorrect = answered === q.correct;
+      fbClass += isCorrect ? ' is-correct shown' : ' is-incorrect shown';
+      fbContent = '<strong>' + (isCorrect ? q.correctFeedback : q.incorrectFeedback) + '</strong>' + q.explanation;
+    }
+    html += '<div class="' + fbClass + '" id="feedback">' + fbContent + '</div>';
+
+    html += '<div class="nav-row">';
+    html += '<button class="btn" id="backBtn" ' + (i === 0 ? 'disabled' : '') + '>Back</button>';
+    var isLast = i === QUESTIONS.length - 1;
+    html += '<button class="btn primary" id="nextBtn" ' + (answered ? '' : 'disabled') + '>' + (isLast ? 'See results' : 'Next') + '</button>';
+    html += '</div>';
+
+    cardEl.innerHTML = html;
+
+    if (q.hint) {
+      document.getElementById('hintBtn').addEventListener('click', function () {
+        document.getElementById('hintText').classList.toggle('shown');
+      });
+    }
+
+    document.querySelectorAll('#optionsWrap .option').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (state.answers[i] !== null) return;
+        state.answers[i] = btn.getAttribute('data-opt');
+        render();
+      });
+    });
+
+    document.getElementById('backBtn').addEventListener('click', function () {
+      state.idx = Math.max(0, i - 1);
+      render();
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', function () {
+      if (isLast) {
+        state.finished = true;
+        render();
+      } else {
+        state.idx = i + 1;
+        render();
+      }
+    });
+  }
+
+  function renderResults() {
+    var s = score();
+    var total = QUESTIONS.length;
+    var msg;
+    if (s === total) {
+      msg = "Perfect score — you've got periodic motion down cold.";
+    } else if (s >= total * 0.7) {
+      msg = "Solid work — review the ones you missed and it'll stick.";
+    } else if (s >= total * 0.4) {
+      msg = "Good start — worth another pass through Hooke's Law and the pendulum equation.";
+    } else {
+      msg = "Worth re-reading the lesson before trying again — the formulas take practice.";
+    }
+
+    var html = '<div class="results">';
+    html += '<p class="score-label">Your score</p>';
+    html += '<p class="score-big">' + s + ' / ' + total + '</p>';
+    html += '<p class="score-msg">' + msg + '</p>';
+    html += '<button class="btn primary retake" id="retakeBtn">Retake quiz</button>';
+    html += '</div>';
+    cardEl.innerHTML = html;
+
+    document.getElementById('retakeBtn').addEventListener('click', function () {
+      state = {
+        idx: 0,
+        answers: new Array(QUESTIONS.length).fill(null),
+        visited: new Array(QUESTIONS.length).fill(false),
+        optionOrder: new Array(QUESTIONS.length).fill(null),
+        finished: false
+      };
+      render();
+    });
+  }
+
+  function render() {
+    renderBars();
+    if (state.finished) {
+      renderResults();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
